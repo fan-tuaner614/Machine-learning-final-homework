@@ -23,6 +23,12 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')
 
+# 设置matplotlib中文字体支持
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式后端
+from utils.chinese_font import setup_chinese_font, get_chinese_font
+setup_chinese_font()  # 配置中文字体
+
 # 导入模块
 from src.data_loader import SingleCellDataLoader
 from src.preprocessing import SingleCellPreprocessor
@@ -375,11 +381,14 @@ class BasicExperiment:
         print("\n[7.1] 绘制训练损失曲线")
         print("-"*60)
         
+        from utils.chinese_font import get_chinese_font
+        font_prop = get_chinese_font()
+        
         plt.figure(figsize=(10, 6))
         plt.plot(self.history['loss'], linewidth=2, color='#2E86AB')
-        plt.xlabel('Epoch', fontsize=12)
-        plt.ylabel('重构损失 (MSE)', fontsize=12)
-        plt.title('自编码器训练曲线', fontsize=14, fontweight='bold')
+        plt.xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        plt.ylabel('重构损失 (MSE)', fontsize=12, fontproperties=font_prop)
+        plt.title('自编码器训练曲线', fontsize=14, fontweight='bold', fontproperties=font_prop)
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
         
@@ -406,19 +415,19 @@ class BasicExperiment:
             for i in range(n_samples):
                 # 原始数据
                 axes[i, 0].plot(X_original[i], linewidth=1, alpha=0.7)
-                axes[i, 0].set_title(f'样本 {i+1} - 原始数据', fontsize=11)
-                axes[i, 0].set_ylabel('表达值', fontsize=10)
+                axes[i, 0].set_title(f'样本 {i+1} - 原始数据', fontsize=11, fontproperties=font_prop)
+                axes[i, 0].set_ylabel('表达值', fontsize=10, fontproperties=font_prop)
                 axes[i, 0].grid(True, alpha=0.3)
                 
                 # 重构数据
                 axes[i, 1].plot(X_recon[i], linewidth=1, alpha=0.7, color='orange')
-                axes[i, 1].set_title(f'样本 {i+1} - 重构数据', fontsize=11)
-                axes[i, 1].set_ylabel('表达值', fontsize=10)
+                axes[i, 1].set_title(f'样本 {i+1} - 重构数据', fontsize=11, fontproperties=font_prop)
+                axes[i, 1].set_ylabel('表达值', fontsize=10, fontproperties=font_prop)
                 axes[i, 1].grid(True, alpha=0.3)
                 
                 if i == n_samples - 1:
-                    axes[i, 0].set_xlabel('特征索引', fontsize=10)
-                    axes[i, 1].set_xlabel('特征索引', fontsize=10)
+                    axes[i, 0].set_xlabel('特征索引', fontsize=10, fontproperties=font_prop)
+                    axes[i, 1].set_xlabel('特征索引', fontsize=10, fontproperties=font_prop)
             
             plt.tight_layout()
             recon_path = self.output_dir / 'plots' / 'reconstruction_comparison.png'
@@ -438,17 +447,17 @@ class BasicExperiment:
             
             # 散点图
             axes[0].scatter(latent[:, 0], latent[:, 1], alpha=0.5, s=10)
-            axes[0].set_xlabel('潜在维度 1', fontsize=12)
-            axes[0].set_ylabel('潜在维度 2', fontsize=12)
-            axes[0].set_title('潜在空间分布 (维度1 vs 维度2)', fontsize=13, fontweight='bold')
+            axes[0].set_xlabel('潜在维度 1', fontsize=12, fontproperties=font_prop)
+            axes[0].set_ylabel('潜在维度 2', fontsize=12, fontproperties=font_prop)
+            axes[0].set_title('潜在空间分布 (维度1 vs 维度2)', fontsize=13, fontweight='bold', fontproperties=font_prop)
             axes[0].grid(True, alpha=0.3)
             
             # 维度激活热图
             latent_mean = np.abs(latent).mean(axis=0)
             axes[1].bar(range(len(latent_mean)), latent_mean, color='steelblue', alpha=0.7)
-            axes[1].set_xlabel('潜在维度', fontsize=12)
-            axes[1].set_ylabel('平均激活值', fontsize=12)
-            axes[1].set_title('潜在空间各维度激活强度', fontsize=13, fontweight='bold')
+            axes[1].set_xlabel('潜在维度', fontsize=12, fontproperties=font_prop)
+            axes[1].set_ylabel('平均激活值', fontsize=12, fontproperties=font_prop)
+            axes[1].set_title('潜在空间各维度激活强度', fontsize=13, fontweight='bold', fontproperties=font_prop)
             axes[1].grid(True, alpha=0.3, axis='y')
             
             plt.tight_layout()

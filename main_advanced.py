@@ -46,6 +46,13 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
+# 设置matplotlib中文字体支持
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式后端
+from utils.chinese_font import setup_chinese_font, get_chinese_font
+setup_chinese_font()  # 配置中文字体
+
 # 导入模块
 from src.data_loader import SingleCellDataLoader
 from src.preprocessing import SingleCellPreprocessor
@@ -488,13 +495,16 @@ class AdvancedExperiment:
     def _plot_pretrain_history(self, history, model_name):
         """绘制预训练历史"""
         import matplotlib.pyplot as plt
+        from utils.chinese_font import get_chinese_font
+        
+        font_prop = get_chinese_font()
         
         plt.figure(figsize=(10, 5))
         plt.plot(history['loss'], label='训练损失', linewidth=2)
-        plt.xlabel('Epoch', fontsize=12)
-        plt.ylabel('重构损失', fontsize=12)
-        plt.title(f'{model_name.upper()} 预训练曲线', fontsize=14, fontweight='bold')
-        plt.legend(fontsize=11)
+        plt.xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        plt.ylabel('重构损失', fontsize=12, fontproperties=font_prop)
+        plt.title(f'{model_name.upper()} 预训练曲线', fontsize=14, fontweight='bold', fontproperties=font_prop)
+        plt.legend(fontsize=11, prop=font_prop)
         plt.grid(True, alpha=0.3)
         
         save_path = self.output_dir / 'plots' / f'pretrain_{model_name}_loss.png'
@@ -506,25 +516,28 @@ class AdvancedExperiment:
     def _plot_training_history(self, history, model_name):
         """绘制训练历史"""
         import matplotlib.pyplot as plt
+        from utils.chinese_font import get_chinese_font
+        
+        font_prop = get_chinese_font()
         
         fig, axes = plt.subplots(1, 2, figsize=(15, 5))
         
         # 损失曲线
         axes[0].plot(history['train_loss'], label='训练损失', linewidth=2)
         axes[0].plot(history['val_loss'], label='验证损失', linewidth=2)
-        axes[0].set_xlabel('Epoch', fontsize=12)
-        axes[0].set_ylabel('损失', fontsize=12)
-        axes[0].set_title('训练和验证损失', fontsize=13, fontweight='bold')
-        axes[0].legend(fontsize=11)
+        axes[0].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        axes[0].set_ylabel('损失', fontsize=12, fontproperties=font_prop)
+        axes[0].set_title('训练和验证损失', fontsize=13, fontweight='bold', fontproperties=font_prop)
+        axes[0].legend(fontsize=11, prop=font_prop)
         axes[0].grid(True, alpha=0.3)
         
         # 准确率曲线
         axes[1].plot(history['train_acc'], label='训练准确率', linewidth=2)
         axes[1].plot(history['val_acc'], label='验证准确率', linewidth=2)
-        axes[1].set_xlabel('Epoch', fontsize=12)
-        axes[1].set_ylabel('准确率', fontsize=12)
-        axes[1].set_title('训练和验证准确率', fontsize=13, fontweight='bold')
-        axes[1].legend(fontsize=11)
+        axes[1].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        axes[1].set_ylabel('准确率', fontsize=12, fontproperties=font_prop)
+        axes[1].set_title('训练和验证准确率', fontsize=13, fontweight='bold', fontproperties=font_prop)
+        axes[1].legend(fontsize=11, prop=font_prop)
         axes[1].grid(True, alpha=0.3)
         
         plt.tight_layout()
@@ -537,6 +550,9 @@ class AdvancedExperiment:
     def _plot_performance_comparison(self, ratios, metrics):
         """绘制性能对比图"""
         import matplotlib.pyplot as plt
+        from utils.chinese_font import get_chinese_font
+        
+        font_prop = get_chinese_font()
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
         
@@ -549,41 +565,41 @@ class AdvancedExperiment:
         ax.bar(x - width, metrics['accuracy'], width, label='准确率', alpha=0.8)
         ax.bar(x, metrics['f1_score'], width, label='F1分数', alpha=0.8)
         ax.bar(x + width, metrics['auc'], width, label='AUC', alpha=0.8)
-        ax.set_xlabel('标签比例', fontsize=12)
-        ax.set_ylabel('得分', fontsize=12)
-        ax.set_title('分类性能对比（准确率/F1/AUC）', fontsize=13, fontweight='bold')
+        ax.set_xlabel('标签比例', fontsize=12, fontproperties=font_prop)
+        ax.set_ylabel('得分', fontsize=12, fontproperties=font_prop)
+        ax.set_title('分类性能对比（准确率/F1/AUC）', fontsize=13, fontweight='bold', fontproperties=font_prop)
         ax.set_xticks(x)
         ax.set_xticklabels(ratio_labels, rotation=15)
-        ax.legend(fontsize=11)
+        ax.legend(fontsize=11, prop=font_prop)
         ax.grid(True, alpha=0.3, axis='y')
         
         # 2. 聚类质量
         ax = axes[0, 1]
         ax.bar(x - width/2, metrics['ari'], width, label='ARI', alpha=0.8)
         ax.bar(x + width/2, metrics['nmi'], width, label='NMI', alpha=0.8)
-        ax.set_xlabel('标签比例', fontsize=12)
-        ax.set_ylabel('得分', fontsize=12)
-        ax.set_title('聚类质量对比', fontsize=13, fontweight='bold')
+        ax.set_xlabel('标签比例', fontsize=12, fontproperties=font_prop)
+        ax.set_ylabel('得分', fontsize=12, fontproperties=font_prop)
+        ax.set_title('聚类质量对比', fontsize=13, fontweight='bold', fontproperties=font_prop)
         ax.set_xticks(x)
         ax.set_xticklabels(ratio_labels, rotation=15)
-        ax.legend(fontsize=11)
+        ax.legend(fontsize=11, prop=font_prop)
         ax.grid(True, alpha=0.3, axis='y')
         
         # 3. 特征稳定性
         ax = axes[1, 0]
         ax.plot(ratio_labels, metrics['jaccard'], marker='o', linewidth=2, markersize=8)
-        ax.set_xlabel('标签比例', fontsize=12)
-        ax.set_ylabel('Jaccard相似度', fontsize=12)
-        ax.set_title('特征稳定性', fontsize=13, fontweight='bold')
+        ax.set_xlabel('标签比例', fontsize=12, fontproperties=font_prop)
+        ax.set_ylabel('Jaccard相似度', fontsize=12, fontproperties=font_prop)
+        ax.set_title('特征稳定性', fontsize=13, fontweight='bold', fontproperties=font_prop)
         ax.set_xticklabels(ratio_labels, rotation=15)
         ax.grid(True, alpha=0.3)
         
         # 4. 计算效率
         ax = axes[1, 1]
         ax.bar(ratio_labels, metrics['inference_time'], alpha=0.8, color='coral')
-        ax.set_xlabel('标签比例', fontsize=12)
-        ax.set_ylabel('推理时间 (ms)', fontsize=12)
-        ax.set_title('计算效率', fontsize=13, fontweight='bold')
+        ax.set_xlabel('标签比例', fontsize=12, fontproperties=font_prop)
+        ax.set_ylabel('推理时间 (ms)', fontsize=12, fontproperties=font_prop)
+        ax.set_title('计算效率', fontsize=13, fontweight='bold', fontproperties=font_prop)
         ax.set_xticklabels(ratio_labels, rotation=15)
         ax.grid(True, alpha=0.3, axis='y')
         

@@ -1,7 +1,11 @@
-"""
-可视化工具模块
+"""可视化工具模块
 Visualization Utilities
 """
+
+import matplotlib
+
+# 使用非交互式后端（必须在导入 pyplot 之前设置）
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,40 +13,12 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional
 import warnings
+import os
 warnings.filterwarnings('ignore')
 
-# 设置中文字体和编码
-plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans', 'Arial Unicode MS']
-plt.rcParams['axes.unicode_minus'] = False
-plt.rcParams['font.family'] = 'sans-serif'
-
-# 设置编码为UTF-8
-import matplotlib
-matplotlib.rcParams['axes.unicode_minus'] = False
-matplotlib.use('Agg')  # 使用非交互式后端
-
-# 尝试设置中文字体
-try:
-    import matplotlib.font_manager as fm
-    # 检查系统字体
-    font_paths = fm.findSystemFonts()
-    chinese_fonts = []
-    for font_path in font_paths:
-        try:
-            font_prop = fm.FontProperties(fname=font_path)
-            if 'Hei' in font_prop.get_name() or 'Kai' in font_prop.get_name() or 'YaHei' in font_prop.get_name():
-                chinese_fonts.append(font_prop.get_name())
-        except:
-            continue
-
-    if chinese_fonts:
-        plt.rcParams['font.sans-serif'] = chinese_fonts + ['DejaVu Sans', 'Arial Unicode MS']
-        print(f"OK - Using Chinese font: {chinese_fonts[0]}")
-    else:
-        print("Warning - No Chinese font found, using default")
-
-except Exception as e:
-    print(f"Warning - Font setup failed: {e}")
+# 导入中文字体配置
+from utils.chinese_font import setup_chinese_font, get_chinese_font
+setup_chinese_font()
 
 sns.set_style('whitegrid')
 
@@ -59,6 +35,7 @@ class Visualizer:
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.font_prop = get_chinese_font()
     
     def plot_training_history(self,
                               history: Dict,
@@ -73,33 +50,34 @@ class Visualizer:
             save: 是否保存
         """
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+        font_prop = self.font_prop
         
         epochs = range(1, len(history['train_loss']) + 1)
         
         # 损失曲线
         axes[0, 0].plot(epochs, history['train_loss'], 'b-', label='训练损失', linewidth=2)
         axes[0, 0].plot(epochs, history['val_loss'], 'r-', label='验证损失', linewidth=2)
-        axes[0, 0].set_xlabel('Epoch', fontsize=12)
-        axes[0, 0].set_ylabel('Loss', fontsize=12)
-        axes[0, 0].set_title('损失曲线', fontsize=14, fontweight='bold')
-        axes[0, 0].legend(fontsize=10)
+        axes[0, 0].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        axes[0, 0].set_ylabel('Loss', fontsize=12, fontproperties=font_prop)
+        axes[0, 0].set_title('损失曲线', fontsize=14, fontweight='bold', fontproperties=font_prop)
+        axes[0, 0].legend(fontsize=10, prop=font_prop)
         axes[0, 0].grid(True, alpha=0.3)
         
         # 准确率曲线
         axes[0, 1].plot(epochs, history['train_acc'], 'b-', label='训练准确率', linewidth=2)
         axes[0, 1].plot(epochs, history['val_acc'], 'r-', label='验证准确率', linewidth=2)
-        axes[0, 1].set_xlabel('Epoch', fontsize=12)
-        axes[0, 1].set_ylabel('Accuracy', fontsize=12)
-        axes[0, 1].set_title('准确率曲线', fontsize=14, fontweight='bold')
-        axes[0, 1].legend(fontsize=10)
+        axes[0, 1].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        axes[0, 1].set_ylabel('Accuracy', fontsize=12, fontproperties=font_prop)
+        axes[0, 1].set_title('准确率曲线', fontsize=14, fontweight='bold', fontproperties=font_prop)
+        axes[0, 1].legend(fontsize=10, prop=font_prop)
         axes[0, 1].grid(True, alpha=0.3)
         
         # 学习率曲线（如果有）
         if 'lr' in history and len(history['lr']) > 0:
             axes[1, 0].plot(epochs, history['lr'], 'g-', linewidth=2)
-            axes[1, 0].set_xlabel('Epoch', fontsize=12)
-            axes[1, 0].set_ylabel('Learning Rate', fontsize=12)
-            axes[1, 0].set_title('学习率变化', fontsize=14, fontweight='bold')
+            axes[1, 0].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+            axes[1, 0].set_ylabel('Learning Rate', fontsize=12, fontproperties=font_prop)
+            axes[1, 0].set_title('学习率变化', fontsize=14, fontweight='bold', fontproperties=font_prop)
             axes[1, 0].set_yscale('log')
             axes[1, 0].grid(True, alpha=0.3)
         else:
@@ -107,21 +85,21 @@ class Visualizer:
             loss_gap = [train - val for train, val in zip(history['train_loss'], history['val_loss'])]
             axes[1, 0].plot(epochs, loss_gap, 'orange', linewidth=2)
             axes[1, 0].axhline(y=0, color='k', linestyle='--', alpha=0.3)
-            axes[1, 0].set_xlabel('Epoch', fontsize=12)
-            axes[1, 0].set_ylabel('Train Loss - Val Loss', fontsize=12)
-            axes[1, 0].set_title('损失差距', fontsize=14, fontweight='bold')
+            axes[1, 0].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+            axes[1, 0].set_ylabel('Train Loss - Val Loss', fontsize=12, fontproperties=font_prop)
+            axes[1, 0].set_title('损失差距', fontsize=14, fontweight='bold', fontproperties=font_prop)
             axes[1, 0].grid(True, alpha=0.3)
         
         # 训练验证差距
         acc_gap = [train - val for train, val in zip(history['train_acc'], history['val_acc'])]
         axes[1, 1].plot(epochs, acc_gap, 'purple', linewidth=2)
         axes[1, 1].axhline(y=0, color='k', linestyle='--', alpha=0.3)
-        axes[1, 1].set_xlabel('Epoch', fontsize=12)
-        axes[1, 1].set_ylabel('Train Acc - Val Acc', fontsize=12)
-        axes[1, 1].set_title('过拟合程度 (越接近0越好)', fontsize=14, fontweight='bold')
+        axes[1, 1].set_xlabel('Epoch', fontsize=12, fontproperties=font_prop)
+        axes[1, 1].set_ylabel('Train Acc - Val Acc', fontsize=12, fontproperties=font_prop)
+        axes[1, 1].set_title('过拟合程度 (越接近0越好)', fontsize=14, fontweight='bold', fontproperties=font_prop)
         axes[1, 1].grid(True, alpha=0.3)
         
-        plt.suptitle(f'{dataset_name} - 训练历史', fontsize=16, fontweight='bold', y=0.995)
+        plt.suptitle(f'{dataset_name} - 训练历史', fontsize=16, fontweight='bold', y=0.995, fontproperties=font_prop)
         plt.tight_layout()
         
         if save:
